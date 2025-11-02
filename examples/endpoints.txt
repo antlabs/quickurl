@@ -1,0 +1,8 @@
+# Example curl commands file
+# One curl command per line
+# Empty lines and lines starting with # are ignored
+
+curl https://httpbin.org/get
+curl -X POST https://httpbin.org/post -H "Content-Type: application/json" -d '{"item":"book"}'
+curl https://httpbin.org/uuid
+curl https://httpbin.org/delay/1

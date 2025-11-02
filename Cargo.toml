@@ -1,0 +1,66 @@
+[package]
+name = "hurl"
+version = "0.1.0"
+edition = "2021"
+authors = ["hurl contributors"]
+description = "A modern, high-performance HTTP benchmarking tool inspired by wrk with curl command parsing support"
+license = "MIT"
+repository = "https://github.com/antlabs/hurl"
+
+[[bin]]
+name = "hurl"
+path = "src/main.rs"
+
+[dependencies]
+# HTTP client
+reqwest = { version = "0.11", features = ["json", "blocking"] }
+tokio = { version = "1.35", features = ["full"] }
+hyper = { version = "0.14", features = ["full"] }
+
+# CLI
+clap = { version = "4.4", features = ["derive", "cargo"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
+
+# Statistics
+hdrhistogram = "7.5"
+
+# Utilities
+anyhow = "1.0"
+thiserror = "1.0"
+chrono = "0.4"
+uuid = { version = "1.6", features = ["v4", "serde"] }
+rand = "0.8"
+regex = "1.10"
+lazy_static = "1.4"
+url = "2.5"
+
+# Async runtime
+futures = "0.3"
+async-trait = "0.1"
+
+# Terminal UI
+crossterm = "0.27"
+ratatui = "0.25"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = "0.3"
+
+# Rate limiting
+governor = "0.6"
+nonzero_ext = "0.3"
+
+# Encoding
+base64 = "0.21"
+
+[dev-dependencies]
+criterion = "0.5"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1

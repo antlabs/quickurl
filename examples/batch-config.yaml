@@ -1,0 +1,19 @@
+version: "1.0"
+tests:
+  - name: "Simple GET Request"
+    curl: 'curl https://httpbin.org/get'
+    connections: 10
+    duration: "10s"
+    threads: 2
+    
+  - name: "POST with JSON"
+    curl: 'curl -X POST https://httpbin.org/post -H "Content-Type: application/json" -d "{\"test\":\"data\"}"'
+    connections: 20
+    duration: "15s"
+    threads: 2
+    
+  - name: "GET with Headers"
+    curl: 'curl -H "User-Agent: hurl/1.0" -H "Accept: application/json" https://httpbin.org/headers'
+    connections: 15
+    duration: "10s"
+    threads: 2

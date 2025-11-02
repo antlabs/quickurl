@@ -1,0 +1,32 @@
+port: 8080
+
+routes:
+  # Echo endpoint - returns request details
+  - path: /echo
+    method: GET
+    echo: true
+
+  # Fast endpoint - no delay
+  - path: /fast
+    method: GET
+    status_code: 200
+    response: '{"message": "Fast response"}'
+
+  # Slow endpoint - 100ms delay
+  - path: /slow
+    method: GET
+    status_code: 200
+    delay: 100ms
+    response: '{"message": "Slow response"}'
+
+  # Error endpoint
+  - path: /error
+    method: GET
+    status_code: 500
+    response: '{"error": "Internal server error"}'
+
+  # POST endpoint with echo
+  - path: /api/users
+    method: POST
+    status_code: 201
+    echo: true
