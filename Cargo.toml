@@ -17,10 +17,27 @@ name = "quickurl"
 path = "src/main.rs"
 
 [dependencies]
-# HTTP client
-reqwest = { version = "0.11", features = ["json", "blocking"] }
+# HTTP client - 使用底层库重构
+hyper = { version = "1.4", features = ["full"] }
+hyper-util = { version = "0.1", features = ["full"] }
+hyper-rustls = { version = "0.27", features = ["http2"] }
 tokio = { version = "1.35", features = ["full"] }
-hyper = { version = "0.14", features = ["full"] }
+http-body-util = "0.1"
+bytes = "1.5"
+
+# TLS support
+rustls = { version = "0.23", features = ["ring"] }
+rustls-native-certs = "0.7"
+
+# DNS resolver
+hickory-resolver = { version = "0.24", features = ["tokio-runtime"] }
+
+# HTTP/3 support (optional)
+# h3 = "0.0.4"
+# h3-quinn = "0.0.5"
+
+# 保留 reqwest 作为备选（可选）
+reqwest = { version = "0.11", features = ["json"], optional = true }
 
 # CLI
 clap = { version = "4.4", features = ["derive", "cargo"] }

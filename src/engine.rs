@@ -1,5 +1,6 @@
 use crate::cli::Args;
 use crate::curl_parser::{parse_curl_command, parse_curl_file, CurlCommand};
+use crate::http_client::ConnectionPool;
 use crate::stats::{create_shared_stats, RequestResult, SharedStats};
 use crate::template::TemplateEngine;
 use anyhow::Result;
@@ -93,7 +94,7 @@ fn create_command_from_args(args: &Args, url: String) -> CurlCommand {
 
 async fn run_workers(
     commands: Vec<CurlCommand>,
-    _connections: usize,
+    connections: usize,
     threads: usize,
     duration: Duration,
     rate: u32,
@@ -106,6 +107,14 @@ async fn run_workers(
     let load_strategy = load_strategy.to_string();
     let end_time = Instant::now() + duration;
 
+    // 创建连接池（全局共享）
+    let connections_per_client = (connections / threads).max(1);
+    let pool = Arc::new(
+        ConnectionPool::new(threads, timeout, connections_per_client)
+            .await
+            .expect("Failed to create connection pool")
+    );
+
     let mut handles = Vec::new();
 
     for _ in 0..threads {
@@ -113,12 +122,10 @@ async fn run_workers(
         let stats = stats.clone();
         let load_strategy = load_strategy.clone();
         let template_engine = template_engine.clone();
+        let pool = pool.clone();
         
         let handle = tokio::spawn(async move {
-            let client = reqwest::Client::builder()
-                .timeout(timeout)
-                .build()
-                .unwrap();
+            let client = pool.get_client();
 
             let mut request_count = 0u64;
 
@@ -141,7 +148,7 @@ async fn run_workers(
 
                 // Make request
                 let start = Instant::now();
-                let result = make_request(&client, &url, &cmd.method, &cmd.headers, body.as_deref()).await;
+                let result = client.request(&cmd.method, &url, &cmd.headers, body.as_deref()).await;
                 let duration = start.elapsed();
 
                 // Record result
@@ -175,37 +182,4 @@ async fn run_workers(
     Ok(())
 }
 
-async fn make_request(
-    client: &reqwest::Client,
-    url: &str,
-    method: &str,
-    headers: &std::collections::HashMap<String, String>,
-    body: Option<&str>,
-) -> Result<(u16, usize)> {
-    let mut request = match method {
-        "GET" => client.get(url),
-        "POST" => client.post(url),
-        "PUT" => client.put(url),
-        "DELETE" => client.delete(url),
-        "HEAD" => client.head(url),
-        "PATCH" => client.patch(url),
-        _ => client.get(url),
-    };
-
-    // Add headers
-    for (key, value) in headers {
-        request = request.header(key, value);
-    }
-
-    // Add body
-    if let Some(body_data) = body {
-        request = request.body(body_data.to_string());
-    }
-
-    // Send request
-    let response = request.send().await?;
-    let status = response.status().as_u16();
-    let bytes = response.bytes().await?;
-    
-    Ok((status, bytes.len()))
-}
+// make_request 函数已被移除，现在直接使用 HttpClient::request 方法

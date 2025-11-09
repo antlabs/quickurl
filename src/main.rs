@@ -6,6 +6,7 @@ mod template;
 mod batch;
 mod mock_server;
 mod ui;
+mod http_client;
 
 use anyhow::Result;
 use clap::Parser;
