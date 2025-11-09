@@ -119,6 +119,7 @@ async fn run_single_test(test: TestConfig) -> TestResult {
         data: curl_cmd.body.clone(),
         verbose: test.verbose,
         use_nethttp: test.use_nethttp,
+        http2: false,  // 默认使用 HTTP/1.1
         latency: false,
         live_ui: false,
         parse_curl: None,

@@ -19,18 +19,34 @@ pub struct HttpClient {
 
 impl HttpClient {
     /// 创建新的 HTTP 客户端
-    pub async fn new(timeout: Duration, pool_size: usize) -> Result<Self> {
+    /// 
+    /// # 参数
+    /// - `timeout`: 请求超时时间
+    /// - `pool_size`: 连接池大小
+    /// - `enable_http2`: 是否启用 HTTP/2（默认只使用 HTTP/1.1）
+    pub async fn new(timeout: Duration, pool_size: usize, enable_http2: bool) -> Result<Self> {
         // 初始化 rustls crypto provider（只需要初始化一次）
         let _ = rustls::crypto::ring::default_provider().install_default();
         
-        // 配置 HTTPS 连接器
-        let https = HttpsConnectorBuilder::new()
-            .with_native_roots()
-            .map_err(|e| anyhow!("Failed to load native certs: {}", e))?
-            .https_or_http()
-            .enable_http1()
-            .enable_http2()
-            .build();
+        // 根据参数决定是否启用 HTTP/2，构建不同的连接器
+        let https = if enable_http2 {
+            // 启用 HTTP/1.1 和 HTTP/2
+            HttpsConnectorBuilder::new()
+                .with_native_roots()
+                .map_err(|e| anyhow!("Failed to load native certs: {}", e))?
+                .https_or_http()
+                .enable_http1()
+                .enable_http2()
+                .build()
+        } else {
+            // 只启用 HTTP/1.1
+            HttpsConnectorBuilder::new()
+                .with_native_roots()
+                .map_err(|e| anyhow!("Failed to load native certs: {}", e))?
+                .https_or_http()
+                .enable_http1()
+                .build()
+        };
 
         // 创建 HTTP 客户端
         let client = Client::builder(TokioExecutor::new())
@@ -186,11 +202,22 @@ pub struct ConnectionPool {
 
 impl ConnectionPool {
     /// 创建连接池
-    pub async fn new(pool_size: usize, timeout: Duration, connections_per_client: usize) -> Result<Self> {
+    /// 
+    /// # 参数
+    /// - `pool_size`: 连接池中客户端数量
+    /// - `timeout`: 请求超时时间
+    /// - `connections_per_client`: 每个客户端的连接数
+    /// - `enable_http2`: 是否启用 HTTP/2
+    pub async fn new(
+        pool_size: usize,
+        timeout: Duration,
+        connections_per_client: usize,
+        enable_http2: bool,
+    ) -> Result<Self> {
         let mut clients = Vec::with_capacity(pool_size);
         
         for _ in 0..pool_size {
-            let client = HttpClient::new(timeout, connections_per_client).await?;
+            let client = HttpClient::new(timeout, connections_per_client, enable_http2).await?;
             clients.push(Arc::new(client));
         }
 

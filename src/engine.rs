@@ -56,6 +56,7 @@ pub async fn run_benchmark(args: Args) -> Result<()> {
         &args.load_strategy,
         stats.clone(),
         template_engine,
+        args.http2,
     ).await?;
 
     // Finish statistics collection
@@ -102,6 +103,7 @@ async fn run_workers(
     load_strategy: &str,
     stats: SharedStats,
     template_engine: Arc<TemplateEngine>,
+    enable_http2: bool,
 ) -> Result<()> {
     let commands = Arc::new(commands);
     let load_strategy = load_strategy.to_string();
@@ -110,7 +112,7 @@ async fn run_workers(
     // 创建连接池（全局共享）
     let connections_per_client = (connections / threads).max(1);
     let pool = Arc::new(
-        ConnectionPool::new(threads, timeout, connections_per_client)
+        ConnectionPool::new(threads, timeout, connections_per_client, enable_http2)
             .await
             .expect("Failed to create connection pool")
     );

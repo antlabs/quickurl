@@ -74,6 +74,10 @@ pub struct Args {
     #[arg(long = "use-nethttp")]
     pub use_nethttp: bool,
 
+    /// Enable HTTP/2 protocol (default: HTTP/1.1 only)
+    #[arg(long = "http2")]
+    pub http2: bool,
+
     /// Start mock HTTP server
     #[arg(long = "mock-server")]
     pub mock_server: bool,
