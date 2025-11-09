@@ -186,7 +186,7 @@ pub fn print_help() {
 URL Template Variables
 ======================
 
-hurl supports dynamic URL template variables for realistic load testing.
+quickurl supports dynamic URL template variables for realistic load testing.
 
 Built-in Template Functions:
 ----------------------------
@@ -222,23 +222,23 @@ Basic Examples:
 --------------
 
 # Random user ID
-hurl -c 50 -d 30s 'https://api.example.com/users/{{{{random:1-1000}}}}'
+quickurl -c 50 -d 30s 'https://api.example.com/users/{{{{random:1-1000}}}}'
 
 # UUID session
-hurl -c 20 -d 60s 'https://api.example.com/data?session={{{{uuid}}}}'
+quickurl -c 20 -d 60s 'https://api.example.com/data?session={{{{uuid}}}}'
 
 # Timestamp
-hurl -c 10 -d 30s 'https://api.example.com/events?timestamp={{{{timestamp:unix}}}}'
+quickurl -c 10 -d 30s 'https://api.example.com/events?timestamp={{{{timestamp:unix}}}}'
 
 # Sequential pages
-hurl -c 5 -d 60s 'https://api.example.com/items?page={{{{sequence:1}}}}&limit=20'
+quickurl -c 5 -d 60s 'https://api.example.com/items?page={{{{sequence:1}}}}&limit=20'
 
 Custom Variables:
 ----------------
 
 Define variables with --var option:
 
-hurl --var user_id=random:1-10000 \
+quickurl --var user_id=random:1-10000 \
      --var method=choice:GET,POST,PUT \
      --var session=uuid \
      -c 30 -d 45s \
@@ -248,7 +248,7 @@ Advanced Example:
 ----------------
 
 # E-commerce simulation
-hurl --var user_id=random:1-10000 \
+quickurl --var user_id=random:1-10000 \
      --var product_id=random:100-999 \
      --var quantity=choice:1,2,3,4,5 \
      --var payment=choice:credit_card,paypal,apple_pay \

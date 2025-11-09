@@ -1,10 +1,10 @@
-# hurl
+# quickurl
 
-**hurl** = **g**o + **curl** + wr**k**
+**quickurl** = **quick** + **url**
 
-A modern, high-performance HTTP benchmarking tool written in Go, inspired by **wrk**, with native support for parsing **curl** commands.  
+A modern, high-performance HTTP benchmarking tool written in Rust, inspired by **wrk**, with native support for parsing **curl** commands.  
 
-Turn your everyday `hurl` into a scalable load test in seconds — no configuration needed. Just copy, paste, and go.
+Turn your everyday `quickurl` into a scalable load test in seconds — no configuration needed. Just copy, paste, and go.
 
 ## Features
 
@@ -24,15 +24,15 @@ Turn your everyday `hurl` into a scalable load test in seconds — no configurat
 ## Installation
 
 ```bash
-go install github.com/antlabs/hurl/cmd/hurl@latest
+cargo install --path .
 ```
 
 Or build from source:
 
 ```bash
-git clone https://github.com/antlabs/hurl.git
-cd hurl
-go build -o hurl
+git clone https://github.com/antlabs/quickurl.git
+cd quickurl
+cargo build --release
 ```
 
 ## Usage
@@ -41,17 +41,17 @@ go build -o hurl
 
 ```bash
 # Simple GET request
-hurl -c 100 -d 30s http://example.com
+quickurl -c 100 -d 30s http://example.com
 
 # POST request with custom headers
-hurl -c 50 -d 10s -X POST -H "Content-Type: application/json" -d '{"key":"value"}' http://api.example.com
+quickurl -c 50 -d 10s -X POST -H "Content-Type: application/json" -d '{"key":"value"}' http://api.example.com
 ```
 
 ### Parse Curl Commands
 
 ```bash
 # Parse a curl command and use it for benchmarking
-hurl --parse-curl "curl -X POST -H 'Content-Type: application/json' -d '{\"name\":\"test\"}' http://api.example.com/users" -c 100 -d 30s
+quickurl --parse-curl "curl -X POST -H 'Content-Type: application/json' -d '{\"name\":\"test\"}' http://api.example.com/users" -c 100 -d 30s
 ```
 
 ### Options
@@ -78,7 +78,7 @@ hurl --parse-curl "curl -X POST -H 'Content-Type: application/json' -d '{\"name\
 ### Basic Load Test
 
 ```bash
-hurl -c 100 -d 30s -t 4 http://example.com
+quickurl -c 100 -d 30s -t 4 http://example.com
 ```
 
 Output:
@@ -96,14 +96,14 @@ Transfer/sec:     1.52MB
 ### Load Test with Curl Command
 
 ```bash
-hurl --parse-curl "curl -X POST -H 'Authorization: Bearer token123' -H 'Content-Type: application/json' -d '{\"user\":\"test\"}' https://api.example.com/login" -c 50 -d 10s --latency
+quickurl --parse-curl "curl -X POST -H 'Authorization: Bearer token123' -H 'Content-Type: application/json' -d '{\"user\":\"test\"}' https://api.example.com/login" -c 50 -d 10s --latency
 ```
 
 ### Rate Limited Test
 
 ```bash
 # Limit to 1000 requests per second
-hurl -c 10 -d 60s -R 1000 http://example.com
+quickurl -c 10 -d 60s -R 1000 http://example.com
 ```
 
 ### Multiple Curl Commands
@@ -120,13 +120,13 @@ curl https://api.example.com/search?q=test
 EOF
 
 # Random distribution (default) - randomly select from endpoints
-hurl --parse-curl-file endpoints.txt -c 100 -d 60s --use-nethttp
+quickurl --parse-curl-file endpoints.txt -c 100 -d 60s --use-nethttp
 
 # Round-robin distribution - evenly distribute across endpoints
-hurl --parse-curl-file endpoints.txt --load-strategy round-robin -c 100 -d 60s --use-nethttp
+quickurl --parse-curl-file endpoints.txt --load-strategy round-robin -c 100 -d 60s --use-nethttp
 
 # With rate limiting
-hurl --parse-curl-file endpoints.txt --load-strategy random -c 50 -d 30s -R 1000 --use-nethttp
+quickurl --parse-curl-file endpoints.txt --load-strategy random -c 50 -d 30s -R 1000 --use-nethttp
 ```
 
 **File Format**:
@@ -141,7 +141,7 @@ hurl --parse-curl-file endpoints.txt --load-strategy random -c 50 -d 30s -R 1000
 
 **Per-Endpoint Statistics**:
 
-When testing multiple endpoints, hurl automatically provides detailed statistics for each endpoint:
+When testing multiple endpoints, quickurl automatically provides detailed statistics for each endpoint:
 
 ```
 === Per-Endpoint Statistics ===
@@ -176,13 +176,13 @@ Enable real-time interactive UI with live statistics:
 
 ```bash
 # Basic live UI
-hurl --live-ui -c 100 -d 60s --use-nethttp http://example.com
+quickurl --live-ui -c 100 -d 60s --use-nethttp http://example.com
 
 # Live UI with rate limiting
-hurl --live-ui -c 1000 -d 300s -R 5000 --use-nethttp http://api.example.com
+quickurl --live-ui -c 1000 -d 300s -R 5000 --use-nethttp http://api.example.com
 
 # Live UI with multiple endpoints
-hurl --parse-curl-file endpoints.txt --live-ui -c 100 -d 60s --use-nethttp
+quickurl --parse-curl-file endpoints.txt --live-ui -c 100 -d 60s --use-nethttp
 ```
 
 The live UI displays:
@@ -226,16 +226,16 @@ Start a built-in mock HTTP server for testing and benchmarking:
 
 ```bash
 # Start a simple echo server (returns request details)
-hurl --mock-server --mock-port 8080
+quickurl --mock-server --mock-port 8080
 
 # Custom response with delay
-hurl --mock-server --mock-port 8080 --mock-delay 100ms --mock-response '{"status":"ok"}'
+quickurl --mock-server --mock-port 8080 --mock-delay 100ms --mock-response '{"status":"ok"}'
 
 # Custom status code
-hurl --mock-server --mock-port 8080 --mock-status 500 --mock-response '{"error":"server error"}'
+quickurl --mock-server --mock-port 8080 --mock-status 500 --mock-response '{"error":"server error"}'
 
 # Use configuration file for multiple routes
-hurl --mock-server --mock-config examples/mock-server.yaml
+quickurl --mock-server --mock-config examples/mock-server.yaml
 ```
 
 **Mock Server Configuration File** (`mock-server.yaml`):
@@ -279,11 +279,11 @@ routes:
 
 ```bash
 # Terminal 1: Start mock server
-hurl --mock-server --mock-config examples/mock-server.yaml
+quickurl --mock-server --mock-config examples/mock-server.yaml
 
 # Terminal 2: Run benchmark against it
-hurl -c 100 -d 30s --use-nethttp http://localhost:8080/fast
-hurl -c 100 -d 30s --use-nethttp http://localhost:8080/slow
+quickurl -c 100 -d 30s --use-nethttp http://localhost:8080/fast
+quickurl -c 100 -d 30s --use-nethttp http://localhost:8080/slow
 
 # Test multiple endpoints
 cat > endpoints.txt << EOF
@@ -292,7 +292,7 @@ curl http://localhost:8080/slow
 curl http://localhost:8080/error
 EOF
 
-hurl --parse-curl-file endpoints.txt -c 50 -d 30s --use-nethttp
+quickurl --parse-curl-file endpoints.txt -c 50 -d 30s --use-nethttp
 ```
 
 **Mock Server Features**:
@@ -305,26 +305,26 @@ hurl --parse-curl-file endpoints.txt -c 50 -d 30s --use-nethttp
 
 ## Batch Testing with Configuration Files
 
-hurl supports batch testing through YAML or JSON configuration files, allowing you to run multiple tests with different parameters in a single command.
+quickurl supports batch testing through YAML or JSON configuration files, allowing you to run multiple tests with different parameters in a single command.
 
 ### Basic Batch Testing
 
 ```bash
 # Run batch tests from YAML configuration
-hurl --batch-config examples/batch-config.yaml
+quickurl --batch-config examples/batch-config.yaml
 
 # Run batch tests from JSON configuration
-hurl --batch-config examples/batch-config.json
+quickurl --batch-config examples/batch-config.json
 
 # Run tests sequentially instead of concurrently
-hurl --batch-config batch-tests.yaml --batch-sequential
+quickurl --batch-config batch-tests.yaml --batch-sequential
 
 # Limit concurrent batch tests (default: 3)
-hurl --batch-config batch-tests.yaml --batch-concurrency 5
+quickurl --batch-config batch-tests.yaml --batch-concurrency 5
 
 # Generate different report formats
-hurl --batch-config batch-tests.yaml --batch-report csv
-hurl --batch-config batch-tests.yaml --batch-report json
+quickurl --batch-config batch-tests.yaml --batch-report csv
+quickurl --batch-config batch-tests.yaml --batch-report json
 ```
 
 ### Configuration File Format
@@ -445,17 +445,17 @@ Latency Stats:
 
 #### CSV Report
 ```bash
-hurl --batch-config batch-tests.yaml --batch-report csv > results.csv
+quickurl --batch-config batch-tests.yaml --batch-report csv > results.csv
 ```
 
 #### JSON Report
 ```bash
-hurl --batch-config batch-tests.yaml --batch-report json > results.json
+quickurl --batch-config batch-tests.yaml --batch-report json > results.json
 ```
 
 ## URL Template Variables
 
-hurl supports dynamic URL template variables that allow you to generate different values for each request, making it perfect for realistic load testing scenarios.
+quickurl supports dynamic URL template variables that allow you to generate different values for each request, making it perfect for realistic load testing scenarios.
 
 ### Built-in Template Functions
 
@@ -483,25 +483,25 @@ hurl supports dynamic URL template variables that allow you to generate differen
 #### Simple Random User ID
 ```bash
 # Test with random user IDs from 1 to 1000
-hurl -c 50 -d 30s 'https://api.example.com/users/{{random:1-1000}}'
+quickurl -c 50 -d 30s 'https://api.example.com/users/{{random:1-1000}}'
 ```
 
 #### UUID Session Testing
 ```bash
 # Each request gets a unique session ID
-hurl -c 20 -d 60s 'https://api.example.com/data?session={{uuid}}'
+quickurl -c 20 -d 60s 'https://api.example.com/data?session={{uuid}}'
 ```
 
 #### Timestamp-based Requests
 ```bash
 # Include current timestamp in requests
-hurl -c 10 -d 30s 'https://api.example.com/events?timestamp={{timestamp:unix}}'
+quickurl -c 10 -d 30s 'https://api.example.com/events?timestamp={{timestamp:unix}}'
 ```
 
 #### Sequential Page Testing
 ```bash
 # Test pagination with incrementing page numbers
-hurl -c 5 -d 60s 'https://api.example.com/items?page={{sequence:1}}&limit=20'
+quickurl -c 5 -d 60s 'https://api.example.com/items?page={{sequence:1}}&limit=20'
 ```
 
 ### Custom Variable Definitions
@@ -510,7 +510,7 @@ Define your own variables using the `--var` option:
 
 ```bash
 # Define custom variables
-hurl --var user_id=random:1-10000 \
+quickurl --var user_id=random:1-10000 \
      --var method=choice:GET,POST,PUT \
      --var session=uuid \
      -c 30 -d 45s \
@@ -521,7 +521,7 @@ hurl --var user_id=random:1-10000 \
 
 #### E-commerce API Simulation
 ```bash
-hurl --var user_id=random:1-10000 \
+quickurl --var user_id=random:1-10000 \
      --var product_id=random:100-999 \
      --var quantity=choice:1,2,3,4,5 \
      --var payment=choice:credit_card,paypal,apple_pay \
@@ -533,7 +533,7 @@ hurl --var user_id=random:1-10000 \
 
 #### Multi-endpoint Testing
 ```bash
-hurl --var endpoint=choice:users,orders,products,reviews \
+quickurl --var endpoint=choice:users,orders,products,reviews \
      --var id=random:1-1000 \
      --var action=choice:view,edit,delete \
      -c 25 -d 30s \
@@ -565,7 +565,7 @@ tests:
 
 Run with custom variables:
 ```bash
-hurl --batch-config template-test.yaml \
+quickurl --batch-config template-test.yaml \
      --var api_key=uuid \
      --var region=choice:us-east,us-west,eu-central
 ```
@@ -576,7 +576,7 @@ Get detailed help and examples for template variables:
 
 ```bash
 # Show all available template functions and examples
-hurl --help-templates
+quickurl --help-templates
 ```
 
 ### Template Variable Best Practices
@@ -650,9 +650,9 @@ The output format is similar to wrk:
 
 ## Performance
 
-hurl is designed for high performance:
+quickurl is designed for high performance:
 
-- Async I/O using custom pulse library
+- Async I/O using tokio runtime
 - Efficient connection pooling
 - Minimal memory allocation during testing
 - Multi-threaded architecture

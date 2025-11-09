@@ -13,7 +13,7 @@ tests:
     threads: 2
     
   - name: "GET with Headers"
-    curl: 'curl -H "User-Agent: hurl/1.0" -H "Accept: application/json" https://httpbin.org/headers'
+    curl: 'curl -H "User-Agent: quickurl/1.0" -H "Accept: application/json" https://httpbin.org/headers'
     connections: 15
     duration: "10s"
     threads: 2

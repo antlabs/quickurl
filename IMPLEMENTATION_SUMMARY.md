@@ -2,12 +2,12 @@
 
 ## Overview
 
-This is a complete Rust implementation of **hurl**, a high-performance HTTP benchmarking tool inspired by wrk with curl command parsing support. The implementation follows the specifications in the main README.md.
+This is a complete Rust implementation of **quickurl**, a high-performance HTTP benchmarking tool inspired by wrk with curl command parsing support. The implementation follows the specifications in the main README.md.
 
 ## Project Structure
 
 ```
-hurl/
+quickurl/
 ├── Cargo.toml                 # Rust project configuration and dependencies
 ├── src/
 │   ├── main.rs               # Entry point and mode routing
@@ -217,13 +217,13 @@ cargo run --release -- --mock-server --mock-config examples/mock-server.yaml
 ### From Source
 ```bash
 cargo build --release
-./target/release/hurl --help
+./target/release/quickurl --help
 ```
 
 ### Global Installation
 ```bash
 cargo install --path .
-hurl --help
+quickurl --help
 ```
 
 ## Documentation

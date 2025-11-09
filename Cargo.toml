@@ -1,14 +1,14 @@
 [package]
-name = "hurl"
+name = "quickurl"
 version = "0.1.0"
 edition = "2021"
-authors = ["hurl contributors"]
+authors = ["quickurl contributors"]
 description = "A modern, high-performance HTTP benchmarking tool inspired by wrk with curl command parsing support"
 license = "MIT"
-repository = "https://github.com/antlabs/hurl"
+repository = "https://github.com/antlabs/quickurl"
 
 [[bin]]
-name = "hurl"
+name = "quickurl"
 path = "src/main.rs"
 
 [dependencies]

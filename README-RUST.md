@@ -1,6 +1,6 @@
-# hurl - Rust Implementation
+# quickurl - Rust Implementation
 
-This is a Rust implementation of **hurl**, a modern, high-performance HTTP benchmarking tool inspired by **wrk**, with native support for parsing **curl** commands.
+This is a Rust implementation of **quickurl**, a modern, high-performance HTTP benchmarking tool inspired by **wrk**, with native support for parsing **curl** commands.
 
 ## Status
 
@@ -40,8 +40,37 @@ cargo build
 # Build optimized release version
 cargo build --release
 
-# The binary will be at target/release/hurl
+# The binary will be at target/release/quickurl
 ```
+
+### Cross-Compilation (交叉编译)
+
+quickurl 支持交叉编译到多个平台。详细说明请参考 [CROSS_COMPILE.md](CROSS_COMPILE.md)。
+
+```bash
+# 安装交叉编译工具
+make install-cross
+
+# 编译到 Linux x86_64
+make cross-linux
+
+# 编译到 Windows x86_64
+make cross-windows
+
+# 编译到 macOS Universal Binary (Intel + Apple Silicon)
+make cross-macos
+
+# 编译所有平台
+make cross-all
+```
+
+支持的平台：
+- Linux x86_64
+- Linux ARM64
+- Windows x86_64
+- macOS Intel (x86_64)
+- macOS Apple Silicon (ARM64)
+- macOS Universal Binary
 
 ## Installation
 

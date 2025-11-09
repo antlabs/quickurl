@@ -2,7 +2,7 @@ use clap::Parser;
 use std::path::PathBuf;
 
 #[derive(Parser, Debug, Clone)]
-#[command(name = "hurl")]
+#[command(name = "quickurl")]
 #[command(about = "A modern, high-performance HTTP benchmarking tool", long_about = None)]
 #[command(version)]
 pub struct Args {

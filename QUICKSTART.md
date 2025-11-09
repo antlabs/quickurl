@@ -1,4 +1,4 @@
-# Quick Start Guide - hurl (Rust Implementation)
+# Quick Start Guide - quickurl (Rust Implementation)
 
 ## Build
 
@@ -6,7 +6,7 @@
 # Build release version (optimized)
 cargo build --release
 
-# The binary will be at: target/release/hurl
+# The binary will be at: target/release/quickurl
 ```
 
 ## Basic Usage
@@ -14,7 +14,7 @@ cargo build --release
 ### 1. Simple GET Request
 
 ```bash
-./target/release/hurl -c 100 -d 30s https://httpbin.org/get
+./target/release/quickurl -c 100 -d 30s https://httpbin.org/get
 ```
 
 Options:
@@ -24,7 +24,7 @@ Options:
 ### 2. POST Request with JSON
 
 ```bash
-./target/release/hurl -c 50 -d 10s \
+./target/release/quickurl -c 50 -d 10s \
   -X POST \
   -H "Content-Type: application/json" \
   --data '{"key":"value"}' \
@@ -34,7 +34,7 @@ Options:
 ### 3. Parse Curl Command
 
 ```bash
-./target/release/hurl --parse-curl \
+./target/release/quickurl --parse-curl \
   "curl -X POST -H 'Content-Type: application/json' -d '{\"name\":\"test\"}' https://httpbin.org/post" \
   -c 50 -d 10s
 ```
@@ -50,22 +50,22 @@ curl https://httpbin.org/uuid
 
 Run the test:
 ```bash
-./target/release/hurl --parse-curl-file endpoints.txt -c 100 -d 30s
+./target/release/quickurl --parse-curl-file endpoints.txt -c 100 -d 30s
 ```
 
 ### 5. Template Variables
 
 ```bash
 # Random user IDs
-./target/release/hurl -c 50 -d 30s \
+./target/release/quickurl -c 50 -d 30s \
   'https://httpbin.org/anything/user/{{random:1-1000}}'
 
 # UUID sessions
-./target/release/hurl -c 20 -d 60s \
+./target/release/quickurl -c 20 -d 60s \
   'https://httpbin.org/anything?session={{uuid}}'
 
 # Custom variables
-./target/release/hurl \
+./target/release/quickurl \
   --var user_id=random:1-10000 \
   --var action=choice:view,edit,delete \
   -c 30 -d 45s \
@@ -91,19 +91,19 @@ tests:
 
 Run batch tests:
 ```bash
-./target/release/hurl --batch-config batch-config.yaml
+./target/release/quickurl --batch-config batch-config.yaml
 ```
 
 ### 7. Mock Server
 
 Start a mock server:
 ```bash
-./target/release/hurl --mock-server --mock-config examples/mock-server.yaml
+./target/release/quickurl --mock-server --mock-config examples/mock-server.yaml
 ```
 
 In another terminal, test against it:
 ```bash
-./target/release/hurl -c 100 -d 30s http://localhost:8080/fast
+./target/release/quickurl -c 100 -d 30s http://localhost:8080/fast
 ```
 
 ## Common Options
@@ -145,10 +145,10 @@ To install globally:
 cargo install --path .
 ```
 
-Then you can use `hurl` directly:
+Then you can use `quickurl` directly:
 
 ```bash
-hurl -c 100 -d 30s https://httpbin.org/get
+quickurl -c 100 -d 30s https://httpbin.org/get
 ```
 
 ## Next Steps
