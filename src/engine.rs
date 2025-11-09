@@ -1,13 +1,12 @@
 use crate::cli::Args;
 use crate::curl_parser::{parse_curl_command, parse_curl_file, CurlCommand};
 use crate::http_client::{ClientState, ConnectionPool};
-use crate::stats::{create_shared_stats, RequestResult, SharedStats};
+use crate::stats::{create_shared_stats, RequestResult, SharedStats, Statistics};
 use crate::template::TemplateEngine;
 use anyhow::Result;
 use rand::Rng;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use tokio::time::sleep;
 
 pub async fn run_benchmark(args: Args) -> Result<()> {
     // Parse curl commands if provided
@@ -45,8 +44,8 @@ pub async fn run_benchmark(args: Args) -> Result<()> {
     // Create shared statistics
     let stats = create_shared_stats();
 
-    // Run the benchmark（使用 block_in_place 因为 run_workers 现在是同步的）
-    tokio::task::block_in_place(|| {
+    // Run the benchmark（使用 kanal 通道收集统计）
+    let final_stats = tokio::task::block_in_place(|| {
         run_workers(
             commands,
             args.connections,
@@ -55,21 +54,13 @@ pub async fn run_benchmark(args: Args) -> Result<()> {
             args.rate,
             args.parse_timeout()?,
             &args.load_strategy,
-            stats.clone(),
             template_engine,
             args.http2,
         )
     })?;
 
-    // Finish statistics collection
-    {
-        let mut stats_lock = stats.lock().unwrap();
-        stats_lock.finish();
-    }
-
     // Print results
-    let stats_lock = stats.lock().unwrap();
-    stats_lock.print_summary(args.latency);
+    final_stats.print_summary(args.latency);
 
     Ok(())
 }
@@ -103,10 +94,9 @@ fn run_workers(
     rate: u32,
     timeout: Duration,
     load_strategy: &str,
-    stats: SharedStats,
     template_engine: Arc<TemplateEngine>,
     enable_http2: bool,
-) -> Result<()> {
+) -> Result<Statistics> {
     let commands = Arc::new(commands);
     let load_strategy = load_strategy.to_string();
     let end_time = Instant::now() + duration;
@@ -130,11 +120,14 @@ fn run_workers(
             .expect("Failed to create connection pool")
     );
 
+    // 创建 kanal 通道收集统计数据（关键优化：避免 Mutex）
+    let (tx, rx) = kanal::unbounded();
+
     // 使用 LocalSet 架构：每个物理线程独立运行
     let handles: Vec<_> = (0..actual_threads)
         .map(|_| {
             let commands = commands.clone();
-            let stats = stats.clone();
+            let tx = tx.clone();
             let load_strategy = load_strategy.clone();
             let template_engine = template_engine.clone();
             let pool = pool.clone();
@@ -151,7 +144,7 @@ fn run_workers(
                 // 在 LocalSet 中创建多个任务（每个线程处理多个连接）
                 for _ in 0..connections_per_thread {
                     let commands = commands.clone();
-                    let stats = stats.clone();
+                    let tx = tx.clone();
                     let load_strategy = load_strategy.clone();
                     let template_engine = template_engine.clone();
                     let client = pool.get_client().clone();
@@ -174,7 +167,7 @@ fn run_workers(
                                 }
                             };
 
-                            // Apply template processing
+                            // Apply template processing (优化：减少字符串分配)
                             let url = template_engine.process(&cmd.url);
                             let body = cmd.body.as_ref().map(|b| template_engine.process(b));
 
@@ -183,7 +176,7 @@ fn run_workers(
                             let result = client.request(&mut client_state, &cmd.method, &url, &cmd.headers, body.as_deref()).await;
                             let duration = start.elapsed();
 
-                            // Record result
+                            // Record result（通过 kanal 通道发送，无锁）
                             let request_result = RequestResult {
                                 duration,
                                 status_code: result.as_ref().ok().and_then(|r| Some(r.0)),
@@ -192,7 +185,7 @@ fn run_workers(
                                 endpoint: if commands.len() > 1 { Some(cmd.url.clone()) } else { None },
                             };
 
-                            stats.lock().unwrap().record(request_result);
+                            let _ = tx.send(request_result);
                             request_count += 1;
 
                             // Rate limiting
@@ -210,12 +203,28 @@ fn run_workers(
         })
         .collect();
 
-    // 等待所有线程完成
+    // 关闭发送端
+    drop(tx);
+
+    // 在后台线程收集统计数据
+    let collector_handle = std::thread::spawn(move || {
+        let mut stats = Statistics::new();
+        while let Ok(result) = rx.recv() {
+            stats.record(result);
+        }
+        stats.finish();
+        stats
+    });
+
+    // 等待所有工作线程完成
     for handle in handles {
         let _ = handle.join();
     }
 
-    Ok(())
+    // 等待统计收集完成
+    let final_stats = collector_handle.join().unwrap();
+
+    Ok(final_stats)
 }
 
 // make_request 函数已被移除，现在直接使用 HttpClient::request 方法

@@ -65,6 +65,7 @@ num_cpus = "1.16"
 # Async runtime
 futures = "0.3"
 async-trait = "0.1"
+kanal = "0.1.0-pre8"
 
 # Terminal UI
 crossterm = "0.27"
@@ -86,5 +87,8 @@ criterion = "0.5"
 
 [profile.release]
 opt-level = 3
-lto = true
-codegen-units = 1
+lto = "fat"           # 更激进的 LTO
+codegen-units = 1     # 单个代码生成单元，最大化优化
+strip = true          # 移除符号表，减小二进制大小
+panic = "abort"       # panic 时直接 abort，减少代码大小
+overflow-checks = false  # 禁用溢出检查，提升性能
