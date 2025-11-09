@@ -758,38 +758,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "df3b46402a9d5adb4c86a0cf463f42e19994e3ee891101b1841f30a545cb49a9"
 
 [[package]]
-name = "hurl"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "base64",
- "chrono",
- "clap",
- "criterion",
- "crossterm",
- "futures",
- "governor",
- "hdrhistogram",
- "hyper",
- "lazy_static",
- "nonzero_ext",
- "rand",
- "ratatui",
- "regex",
- "reqwest",
- "serde",
- "serde_json",
- "serde_yaml",
- "thiserror",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "url",
- "uuid",
-]
-
-[[package]]
 name = "hyper"
 version = "0.14.32"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1373,6 +1341,38 @@ dependencies = [
  "wasi",
  "web-sys",
  "winapi",
+]
+
+[[package]]
+name = "quickurl"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "base64",
+ "chrono",
+ "clap",
+ "criterion",
+ "crossterm",
+ "futures",
+ "governor",
+ "hdrhistogram",
+ "hyper",
+ "lazy_static",
+ "nonzero_ext",
+ "rand",
+ "ratatui",
+ "regex",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "url",
+ "uuid",
 ]
 
 [[package]]

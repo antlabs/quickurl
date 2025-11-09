@@ -6,6 +6,11 @@ authors = ["quickurl contributors"]
 description = "A modern, high-performance HTTP benchmarking tool inspired by wrk with curl command parsing support"
 license = "MIT"
 repository = "https://github.com/antlabs/quickurl"
+homepage = "https://github.com/antlabs/quickurl"
+documentation = "https://github.com/antlabs/quickurl"
+readme = "README.md"
+keywords = ["http", "benchmark", "performance", "load-testing", "curl"]
+categories = ["command-line-utilities", "development-tools"]
 
 [[bin]]
 name = "quickurl"
