@@ -24,6 +24,7 @@ hyper-rustls = { version = "0.27", features = ["http2"] }
 tokio = { version = "1.35", features = ["full"] }
 http-body-util = "0.1"
 bytes = "1.5"
+tower = { version = "0.4", features = ["util"] }
 
 # TLS support
 rustls = { version = "0.23", features = ["ring"] }
@@ -59,6 +60,7 @@ rand = "0.8"
 regex = "1.10"
 lazy_static = "1.4"
 url = "2.5"
+num_cpus = "1.16"
 
 # Async runtime
 futures = "0.3"

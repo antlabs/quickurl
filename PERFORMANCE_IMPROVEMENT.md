@@ -188,6 +188,33 @@ impl ConnectionPool {
 }
 ```
 
+## HTTP 协议配置
+
+### 默认行为
+- **默认**: 只使用 HTTP/1.1
+- **原因**: HTTP/1.1 在大多数场景下性能更稳定，避免 HTTP/2 的多路复用开销
+
+### 启用 HTTP/2
+如果目标服务器支持 HTTP/2 并且你想测试 HTTP/2 性能，可以使用 `--http2` 参数：
+
+```bash
+# 默认使用 HTTP/1.1
+./target/release/quickurl -c 100 -d 3s -t 10 http://example.com
+
+# 启用 HTTP/2
+./target/release/quickurl -c 100 -d 3s -t 10 --http2 http://example.com
+```
+
+### 性能对比
+在测试中，HTTP/1.1 和 HTTP/2 的性能差异不大：
+- **HTTP/1.1**: ~43,000 QPS
+- **HTTP/2**: ~44,700 QPS
+
+选择建议：
+- 压测 HTTP/1.1 服务：不加 `--http2` 参数
+- 压测 HTTP/2 服务：添加 `--http2` 参数
+- 不确定：使用默认的 HTTP/1.1
+
 ## 未来优化方向
 
 ### 1. HTTP/3 支持
