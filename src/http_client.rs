@@ -5,7 +5,6 @@ use hyper::client::conn::http1;
 use hyper::{Method, Request, Uri};
 use hyper_rustls::{HttpsConnector, HttpsConnectorBuilder};
 use hyper_util::client::legacy::connect::HttpConnector;
-use hyper_util::rt::TokioExecutor;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
@@ -20,9 +19,7 @@ pub struct ClientState {
 
 impl ClientState {
     pub fn new() -> Self {
-        Self {
-            send_request: None,
-        }
+        Self { send_request: None }
     }
 }
 
@@ -44,7 +41,7 @@ pub struct HttpClient {
 
 impl HttpClient {
     /// 创建新的 HTTP 客户端
-    /// 
+    ///
     /// # 参数
     /// - `timeout`: 请求超时时间
     /// - `pool_size`: 连接池大小
@@ -52,7 +49,7 @@ impl HttpClient {
     pub fn new(timeout: Duration, _pool_size: usize, enable_http2: bool) -> Result<Self> {
         // 初始化 rustls crypto provider（只需要初始化一次）
         let _ = rustls::crypto::ring::default_provider().install_default();
-        
+
         // 根据参数决定是否启用 HTTP/2，构建连接器
         let connector = if enable_http2 {
             // 启用 HTTP/1.1 和 HTTP/2
@@ -80,7 +77,7 @@ impl HttpClient {
     }
 
     /// 发送 HTTP 请求 - 使用 oha 的优化策略
-    /// 
+    ///
     /// # 参数
     /// - `state`: 客户端状态，用于连接复用
     /// - `method`: HTTP 方法
@@ -119,9 +116,7 @@ impl HttpClient {
             };
 
             // 构建请求
-            let mut request = Request::builder()
-                .method(http_method)
-                .uri(uri.clone());
+            let mut request = Request::builder().method(http_method).uri(uri.clone());
 
             // 添加 Host header（HTTP/1.1 必需）
             if let Some(host) = uri.host() {
@@ -196,14 +191,13 @@ impl HttpClient {
     }
 
     /// 建立 HTTP/1.1 连接
-    async fn establish_connection(
-        &self,
-        uri: &Uri,
-    ) -> Result<http1::SendRequest<Full<Bytes>>> {
+    async fn establish_connection(&self, uri: &Uri) -> Result<http1::SendRequest<Full<Bytes>>> {
         // 通过 connector 建立 TCP 连接
         use tower::Service;
         let mut connector = self.connector.as_ref().clone();
-        let stream = connector.call(uri.clone()).await
+        let stream = connector
+            .call(uri.clone())
+            .await
             .map_err(|e| anyhow!("Failed to connect: {}", e))?;
 
         // 创建 HTTP/1.1 handshake
@@ -220,7 +214,6 @@ impl HttpClient {
 
         Ok(send_request)
     }
-
 }
 
 /// 连接池管理器
@@ -231,7 +224,7 @@ pub struct ConnectionPool {
 
 impl ConnectionPool {
     /// 创建连接池
-    /// 
+    ///
     /// # 参数
     /// - `pool_size`: 连接池中客户端数量
     /// - `timeout`: 请求超时时间
@@ -244,7 +237,7 @@ impl ConnectionPool {
         enable_http2: bool,
     ) -> Result<Self> {
         let mut clients = Vec::with_capacity(pool_size);
-        
+
         for _ in 0..pool_size {
             let client = HttpClient::new(timeout, connections_per_client, enable_http2)?;
             clients.push(Arc::new(client));
@@ -258,7 +251,9 @@ impl ConnectionPool {
 
     /// 获取一个客户端（轮询）
     pub fn get_client(&self) -> Arc<HttpClient> {
-        let index = self.next_index.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        let index = self
+            .next_index
+            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         self.clients[index % self.clients.len()].clone()
     }
 }

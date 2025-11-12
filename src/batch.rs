@@ -32,10 +32,18 @@ struct TestConfig {
     use_nethttp: bool,
 }
 
-fn default_connections() -> usize { 10 }
-fn default_duration() -> String { "10s".to_string() }
-fn default_threads() -> usize { 2 }
-fn default_timeout() -> String { "30s".to_string() }
+fn default_connections() -> usize {
+    10
+}
+fn default_duration() -> String {
+    "10s".to_string()
+}
+fn default_threads() -> usize {
+    2
+}
+fn default_timeout() -> String {
+    "30s".to_string()
+}
 
 #[derive(Debug)]
 struct TestResult {
@@ -51,7 +59,14 @@ pub async fn run_batch_tests(args: Args) -> Result<()> {
 
     println!("=== Batch Test Configuration ===");
     println!("Total Tests: {}", config.tests.len());
-    println!("Concurrency: {}", if args.batch_sequential { 1 } else { args.batch_concurrency });
+    println!(
+        "Concurrency: {}",
+        if args.batch_sequential {
+            1
+        } else {
+            args.batch_concurrency
+        }
+    );
     println!();
 
     let start_time = Instant::now();
@@ -67,7 +82,7 @@ pub async fn run_batch_tests(args: Args) -> Result<()> {
     } else {
         // Run tests concurrently with limited concurrency
         use futures::stream::{self, StreamExt};
-        
+
         let test_results: Vec<TestResult> = stream::iter(config.tests.clone())
             .map(|test| async move {
                 println!("Running test: {}", test.name);
@@ -76,7 +91,7 @@ pub async fn run_batch_tests(args: Args) -> Result<()> {
             .buffer_unordered(args.batch_concurrency)
             .collect()
             .await;
-        
+
         results = test_results;
     }
 
@@ -90,7 +105,7 @@ pub async fn run_batch_tests(args: Args) -> Result<()> {
 
 async fn run_single_test(test: TestConfig) -> TestResult {
     let start = Instant::now();
-    
+
     // Parse curl command
     let curl_cmd = match parse_curl_command(&test.curl) {
         Ok(cmd) => cmd,
@@ -113,13 +128,15 @@ async fn run_single_test(test: TestConfig) -> TestResult {
         rate: test.rate,
         timeout: test.timeout.clone(),
         method: curl_cmd.method.clone(),
-        headers: curl_cmd.headers.iter()
+        headers: curl_cmd
+            .headers
+            .iter()
             .map(|(k, v)| format!("{}: {}", k, v))
             .collect(),
         data: curl_cmd.body.clone(),
         verbose: test.verbose,
         use_nethttp: test.use_nethttp,
-        http2: false,  // 默认使用 HTTP/1.1
+        http2: false, // 默认使用 HTTP/1.1
         latency: false,
         live_ui: false,
         parse_curl: None,
@@ -159,7 +176,7 @@ async fn run_single_test(test: TestConfig) -> TestResult {
 
 fn load_config(path: &Path) -> Result<BatchConfig> {
     let content = std::fs::read_to_string(path)?;
-    
+
     // Try to parse as YAML first, then JSON
     if path.extension().and_then(|s| s.to_str()) == Some("json") {
         Ok(serde_json::from_str(&content)?)
@@ -168,7 +185,11 @@ fn load_config(path: &Path) -> Result<BatchConfig> {
     }
 }
 
-fn print_report(results: &[TestResult], total_duration: std::time::Duration, format: &str) -> Result<()> {
+fn print_report(
+    results: &[TestResult],
+    total_duration: std::time::Duration,
+    format: &str,
+) -> Result<()> {
     match format {
         "json" => print_json_report(results, total_duration),
         "csv" => print_csv_report(results, total_duration),
@@ -178,26 +199,29 @@ fn print_report(results: &[TestResult], total_duration: std::time::Duration, for
 
 fn print_text_report(results: &[TestResult], total_duration: std::time::Duration) -> Result<()> {
     println!("\n=== Batch Test Report ===\n");
-    
+
     let success_count = results.iter().filter(|r| r.success).count();
     let success_rate = (success_count as f64 / results.len() as f64) * 100.0;
-    
+
     println!("Total Tests: {}", results.len());
     println!("Success Rate: {:.2}%", success_rate);
     println!("Total Time: {:.2}s", total_duration.as_secs_f64());
-    
+
     println!("\n=== Test Results ===\n");
-    
+
     for (i, result) in results.iter().enumerate() {
         println!("{}. {}", i + 1, result.name);
         println!("   Duration: {:.2}s", result.duration.as_secs_f64());
-        println!("   Status: {}", if result.success { "SUCCESS" } else { "FAILED" });
+        println!(
+            "   Status: {}",
+            if result.success { "SUCCESS" } else { "FAILED" }
+        );
         if let Some(error) = &result.error {
             println!("   Error: {}", error);
         }
         println!();
     }
-    
+
     Ok(())
 }
 
@@ -210,7 +234,7 @@ fn print_json_report(results: &[TestResult], total_duration: std::time::Duration
         total_duration_secs: f64,
         results: Vec<JsonTestResult>,
     }
-    
+
     #[derive(Serialize)]
     struct JsonTestResult {
         name: String,
@@ -218,38 +242,42 @@ fn print_json_report(results: &[TestResult], total_duration: std::time::Duration
         success: bool,
         error: Option<String>,
     }
-    
+
     let success_count = results.iter().filter(|r| r.success).count();
     let success_rate = (success_count as f64 / results.len() as f64) * 100.0;
-    
+
     let report = JsonReport {
         total_tests: results.len(),
         success_count,
         success_rate,
         total_duration_secs: total_duration.as_secs_f64(),
-        results: results.iter().map(|r| JsonTestResult {
-            name: r.name.clone(),
-            duration_secs: r.duration.as_secs_f64(),
-            success: r.success,
-            error: r.error.clone(),
-        }).collect(),
+        results: results
+            .iter()
+            .map(|r| JsonTestResult {
+                name: r.name.clone(),
+                duration_secs: r.duration.as_secs_f64(),
+                success: r.success,
+                error: r.error.clone(),
+            })
+            .collect(),
     };
-    
+
     println!("{}", serde_json::to_string_pretty(&report)?);
     Ok(())
 }
 
 fn print_csv_report(results: &[TestResult], _total_duration: std::time::Duration) -> Result<()> {
     println!("Name,Duration(s),Success,Error");
-    
+
     for result in results {
-        println!("{},{},{},{}",
+        println!(
+            "{},{},{},{}",
             result.name,
             result.duration.as_secs_f64(),
             result.success,
             result.error.as_deref().unwrap_or("")
         );
     }
-    
+
     Ok(())
 }

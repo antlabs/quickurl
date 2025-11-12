@@ -47,13 +47,13 @@ impl TemplateEngine {
 
     pub fn add_variable(&mut self, name: String, definition: &str) -> Result<()> {
         let var_type = Self::parse_variable_definition(definition)?;
-        
+
         // Initialize sequence counter if needed
         if let VariableType::Sequence { start } = &var_type {
             let sequences = Arc::get_mut(&mut self.sequences).unwrap();
             sequences.insert(name.clone(), AtomicU64::new(*start));
         }
-        
+
         self.variables.insert(name, var_type);
         Ok(())
     }
@@ -63,7 +63,9 @@ impl TemplateEngine {
             let range = &def[7..];
             let parts: Vec<&str> = range.split('-').collect();
             if parts.len() != 2 {
-                return Err(anyhow!("Invalid random range format. Expected: random:min-max"));
+                return Err(anyhow!(
+                    "Invalid random range format. Expected: random:min-max"
+                ));
             }
             let min: i64 = parts[0].parse()?;
             let max: i64 = parts[1].parse()?;
@@ -79,7 +81,9 @@ impl TemplateEngine {
             let format = Self::parse_timestamp_format(format_str)?;
             Ok(VariableType::Timestamp { format })
         } else if def == "timestamp" || def == "now" {
-            Ok(VariableType::Timestamp { format: TimestampFormat::Unix })
+            Ok(VariableType::Timestamp {
+                format: TimestampFormat::Unix,
+            })
         } else if def.starts_with("sequence:") {
             let start: u64 = def[9..].parse()?;
             Ok(VariableType::Sequence { start })
@@ -91,7 +95,9 @@ impl TemplateEngine {
             }
             Ok(VariableType::Choice { options })
         } else {
-            Ok(VariableType::Static { value: def.to_string() })
+            Ok(VariableType::Static {
+                value: def.to_string(),
+            })
         }
     }
 
@@ -108,10 +114,13 @@ impl TemplateEngine {
     }
 
     pub fn process(&self, text: &str) -> String {
-        TEMPLATE_REGEX.replace_all(text, |caps: &regex::Captures| {
-            let template = &caps[1];
-            self.evaluate_template(template).unwrap_or_else(|_| format!("{{{{{}}}}}", template))
-        }).to_string()
+        TEMPLATE_REGEX
+            .replace_all(text, |caps: &regex::Captures| {
+                let template = &caps[1];
+                self.evaluate_template(template)
+                    .unwrap_or_else(|_| format!("{{{{{}}}}}", template))
+            })
+            .to_string()
     }
 
     fn evaluate_template(&self, template: &str) -> Result<String> {
@@ -149,9 +158,7 @@ impl TemplateEngine {
                 let value = rng.gen_range(*min..=*max);
                 Ok(value.to_string())
             }
-            VariableType::Uuid => {
-                Ok(Uuid::new_v4().to_string())
-            }
+            VariableType::Uuid => Ok(Uuid::new_v4().to_string()),
             VariableType::Timestamp { format } => {
                 let now: DateTime<Utc> = Utc::now();
                 let value = match format {
@@ -174,15 +181,14 @@ impl TemplateEngine {
                 let idx = rng.gen_range(0..options.len());
                 Ok(options[idx].clone())
             }
-            VariableType::Static { value } => {
-                Ok(value.clone())
-            }
+            VariableType::Static { value } => Ok(value.clone()),
         }
     }
 }
 
 pub fn print_help() {
-    println!(r#"
+    println!(
+        r#"
 URL Template Variables
 ======================
 
@@ -254,7 +260,8 @@ quickurl --var user_id=random:1-10000 \
      --var payment=choice:credit_card,paypal,apple_pay \
      -c 50 -d 60s \
      --parse-curl 'curl -X POST https://shop.example.com/api/orders'
-"#);
+"#
+    );
 }
 
 #[cfg(test)]
@@ -280,7 +287,9 @@ mod tests {
     #[test]
     fn test_custom_variable() {
         let mut engine = TemplateEngine::new();
-        engine.add_variable("user_id".to_string(), "random:1-1000").unwrap();
+        engine
+            .add_variable("user_id".to_string(), "random:1-1000")
+            .unwrap();
         let result = engine.process("https://api.example.com/users/{{user_id}}");
         assert!(result.starts_with("https://api.example.com/users/"));
     }

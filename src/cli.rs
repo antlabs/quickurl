@@ -139,7 +139,7 @@ impl Args {
 
 fn parse_duration_string(s: &str) -> anyhow::Result<std::time::Duration> {
     let s = s.trim();
-    
+
     if s.ends_with("ms") {
         let num: u64 = s[..s.len() - 2].parse()?;
         Ok(std::time::Duration::from_millis(num))
@@ -165,9 +165,21 @@ mod tests {
 
     #[test]
     fn test_parse_duration() {
-        assert_eq!(parse_duration_string("10s").unwrap(), std::time::Duration::from_secs(10));
-        assert_eq!(parse_duration_string("5m").unwrap(), std::time::Duration::from_secs(300));
-        assert_eq!(parse_duration_string("1h").unwrap(), std::time::Duration::from_secs(3600));
-        assert_eq!(parse_duration_string("100ms").unwrap(), std::time::Duration::from_millis(100));
+        assert_eq!(
+            parse_duration_string("10s").unwrap(),
+            std::time::Duration::from_secs(10)
+        );
+        assert_eq!(
+            parse_duration_string("5m").unwrap(),
+            std::time::Duration::from_secs(300)
+        );
+        assert_eq!(
+            parse_duration_string("1h").unwrap(),
+            std::time::Duration::from_secs(3600)
+        );
+        assert_eq!(
+            parse_duration_string("100ms").unwrap(),
+            std::time::Duration::from_millis(100)
+        );
     }
 }

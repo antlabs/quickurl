@@ -22,7 +22,7 @@ impl CurlCommand {
 
 pub fn parse_curl_command(cmd: &str) -> Result<CurlCommand> {
     let cmd = cmd.trim();
-    
+
     // Remove leading "curl" if present
     let cmd = if cmd.starts_with("curl ") {
         &cmd[5..]
@@ -188,7 +188,7 @@ pub fn parse_curl_file(path: &std::path::Path) -> Result<Vec<CurlCommand>> {
 
     for line in content.lines() {
         let line = line.trim();
-        
+
         // Skip empty lines and comments
         if line.is_empty() || line.starts_with('#') {
             continue;
@@ -227,7 +227,10 @@ mod tests {
         let parsed = parse_curl_command(cmd).unwrap();
         assert_eq!(parsed.url, "https://api.example.com");
         assert_eq!(parsed.method, "POST");
-        assert_eq!(parsed.headers.get("Content-Type").unwrap(), "application/json");
+        assert_eq!(
+            parsed.headers.get("Content-Type").unwrap(),
+            "application/json"
+        );
         assert_eq!(parsed.body.unwrap(), r#"{"key":"value"}"#);
     }
 
@@ -235,6 +238,9 @@ mod tests {
     fn test_parse_with_headers() {
         let cmd = r#"curl -H "Authorization: Bearer token123" https://api.example.com"#;
         let parsed = parse_curl_command(cmd).unwrap();
-        assert_eq!(parsed.headers.get("Authorization").unwrap(), "Bearer token123");
+        assert_eq!(
+            parsed.headers.get("Authorization").unwrap(),
+            "Bearer token123"
+        );
     }
 }

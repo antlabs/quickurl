@@ -1,12 +1,12 @@
+mod batch;
 mod cli;
 mod curl_parser;
 mod engine;
+mod http_client;
+mod mock_server;
 mod stats;
 mod template;
-mod batch;
-mod mock_server;
 mod ui;
-mod http_client;
 
 use anyhow::Result;
 use clap::Parser;
